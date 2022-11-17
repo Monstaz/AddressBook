@@ -4,7 +4,7 @@
 import os.path
 import pickle
 import sys
-import time
+
 
 class Contact:
     def __init__(self, name, surname, age, number, email):
@@ -35,112 +35,90 @@ def load_from_file():
         data = pickle.load(file)
     return data
 
+
+def str_check(name):
+    while True:
+        try:
+            string = input(f"{name}: ").capitalize()
+            for i in string:
+                if not i.isalpha():
+                    raise ValueError(f"{name} must contain only letters!")
+            break
+        except TypeError:
+            continue
+    return string
+
+# TODO digit didn't convert to string
+def digit_check(name, age_check=False):
+    while True:
+        try:
+            digit = int(input(f"{name}: "))
+            if age_check:
+                if digit == 0 or digit > 100:
+                    raise print("Age cannot equals 0 or bigger 100!")
+                break
+            else:
+                if len(str(digit)) > 15:
+                    raise print("Phone number must consist less than 14 digits!")
+                digit = str(digit)
+                print(digit)
+                break
+        except ValueError:
+            continue
+    return digit
+
+
 # Создаем контакт и возвращаем список с данными
 def create_user():
-    while True:
-        try:
-            user_name = input("Name: ").capitalize()
-            for i in user_name:
-                if not i.isalpha():
-                    raise print("Name must contain only letters!")
-            break
-        except TypeError:
-            continue
-    while True:
-        try:
-            user_surname = input("Surname: ").capitalize()
-            for i in user_surname:
-                if not i.isalpha():
-                    raise print("Surname must contain only letters!")
-            break
-        except TypeError:
-            continue
-    while True:
-        try:
-            user_age = int(input("Age: "))
-            if user_age == 0:
-                raise print("Age can not equal 0!")
-            break
-        except ValueError:
-            print("Age must be digits")
-    while True:
-        try:
-            user_number = int(input("numb"))
-            if user_number >= 
-
-    user_email = input("email")
+    user_name = str_check('Name')
+    user_surname = str_check('Surname')
+    user_age = digit_check('Age', True)
+    user_number = digit_check("Phone number")
+    user_email = input("E-mail: ")
     user = Contact(user_name, user_surname, user_age, user_number, user_email)
     contact = user.data()
-    #lst.append(contact)
-    print(contact)
     return contact
 
-    #print(user.data())
-    #save_to_file(user.data())
-    # Работа с памятью
-    #lst.append(user)
-    #print("lst", lst)
-    #us_list.append(user.data())
-    #print(us_list)
-    #menu()
 
-# Готово, Работает
 # Принимаем список со списками контактов и распаковываем его для вывода на экран пользователя
-def show_book(lst):
-    if len(lst) == 0:
+def show_book(data_list):
+    if len(data_list) == 0:
         print("Addressbook is empty!")
         menu()
-    for index, data in enumerate(lst, 1):
+    for index, data in enumerate(data_list, 1):
         name, surname, age, number, email = data
         print(f"{index}. Name: {name} Surname: {surname} Age: {age} Number: {number} E-mail: {email} ")
 
 
-# Выводим для пользователя список контактов и предлагаем изменить его по нумерации
-# TODO Добавить исключения и возможность изменений либо конректного параметра/ либо не по индексации
-def change_info(lst, x):
-    #show_book(lst)
-    #x = int(input("Enter the index of contact to change it."))
-    #del lst[x]
-    print(lst[x])
-    #name = input("New name")
-    #surname = input("New surname")
-    #age = input("New age")
-    #number = input("New number")
-    #email = input("New email")
-    #new_data = [name, surname, age, number, email]
-    lst[x] = create_user()
-    print(lst)
-    #return lst
-    #оптимизированный вариант
-    save_to_file(lst)
+def change_info(data_list, index):
+    data_list[index] = create_user()
+    save_to_file(data_list)
     menu()
 
-    #Найти элемент и удалить
 
-# TODO удаление элемента в списке подумать
-def del_info(lst, x):
-    del lst[x]
-    save_to_file(lst)
+def del_info(data_list, index):
+    del data_list[index]
+    save_to_file(data_list)
 
 
-def find_user(lst, phone=False, find_result=False):
+# find user by name/phone-number and interact it
+def find_user(data_list, find_by_phone=False, find_result=False):
     index = -1
     find_list = []
     index_list = []
-    if phone:
-        find_key_number = input("Enter a number or part of it to find contact: ")
-        for i in lst:
+    if find_by_phone:
+        find_key_number = digit_check("Enter the phone number or part of it to find contact")
+        print(str(find_key_number))
+        for i in data_list:
             index += 1
             if find_key_number in i[-2]:
-                print("Nashel!", i)
                 find_list.append(i)
                 index_list.append(index)
-                print(index_list)
                 find_result = True
     else:
-        find_key_name = input("Enter the contact's Name")
-        find_key_surname = input("Enter surname:")
-        for i in lst:
+        find_key_name = str_check("Enter Name")
+        find_key_surname = str_check("Enter Surname")
+        for i in data_list:
             index += 1
             if find_key_name in i[0] or find_key_surname in i[1]:
                 find_list.append(i)
@@ -156,20 +134,27 @@ def find_user(lst, phone=False, find_result=False):
         index = index_list[0]
     else:
         show_book(find_list)
-        index = int(input("Choose the index of contact that you need: "))
-        show_book([find_list[index - 1]])
-        index = index_list[index-1]
-    find(lst, index)
+        while True:
+            try:
+                index = int(input("Choose the index of contact: "))
+                if index <= 0:
+                    continue
+                show_book([find_list[index - 1]])
+                index = index_list[index-1]
+                break
+            except IndexError:
+                continue
+    find(data_list, index)
 
 
 # TODO Поиск по адресной книге(либо имя\Фамилия или телефон)
-def find(lst, index):
+def find(data_list, index):
     while True:
         choice = input("1 - Edit contact\t2 - Delete contact\t 3 - Back to menu\n")
         if choice == '1':
-            change_info(lst, index)
+            change_info(data_list, index)
         elif choice == '2':
-            del_info(lst, index)
+            del_info(data_list, index)
         elif choice == '3':
             menu()
 
@@ -186,26 +171,31 @@ def menu():
         input("Press any key to continue...")
         menu()
     elif action == '3':
-        find_user(user_list, True)
+        while True:
+            find_by = input("Find contact by:\n1 - Phone number\n2 - Name and Surname\n")
+            if find_by == '1':
+                find_user(user_list, True)
+                break
+            elif find_by == '2':
+                find_user(user_list)
+                break
+            else:
+                print("Please, choose the option!")
+                continue
         menu()
     elif action == '4':
         sys.exit()
     else:
         menu()
 
-# user_list = [Список кортежей с параметрам контакт]
-# Проверяем есть ли файл для записи(если нет - создаем и добавляем в него пустой список) иначе загружаем список с данными
+
+# Проверяем есть ли файл для записи(если нет - создаем и добавляем в него пустой список)
+# иначе загружаем список с данными
 if os.path.exists('Data.pickle'):
     user_list = load_from_file()
-    print(user_list)
     menu()
 else:
     with open('Data.pickle', 'wb') as f:
         pickle.dump([], f)
     user_list = load_from_file()
     menu()
-"""
-start = time.time()
-# вызовите здесь функцию
-end = time.time()
-print(end-start)"""
