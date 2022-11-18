@@ -1,6 +1,12 @@
 # TODO Создайте собственную программу, работающая из командной строки и
-#  позволяющую просматривать, добавлять, изменять, удалять или искать контактные данные ваших знакомых.
-#  Кроме этого информация должна сохроняться на диске для последующего пользования
+#  позволяющую просматривать, добавлять, изменять, удалять или искать
+#  контактные данные ваших знакомых.Кроме этого информация должна сохраняться
+#  на диске для последующего пользования
+#  Create your own command-line address-book program using which
+#  you can browse, add, modify, delete or search for your contacts such
+#  as friends, family and colleagues and their information such as email
+#  address and/or phone number. Details must be stored for later retrieval.
+
 import os.path
 import pickle
 import sys
@@ -48,7 +54,7 @@ def str_check(name):
             continue
     return string
 
-# TODO digit didn't convert to string
+
 def digit_check(name, age_check=False):
     while True:
         try:
@@ -60,9 +66,7 @@ def digit_check(name, age_check=False):
             else:
                 if len(str(digit)) > 15:
                     raise print("Phone number must consist less than 14 digits!")
-                digit = str(digit)
-                print(digit)
-                break
+                return str(digit)
         except ValueError:
             continue
     return digit
@@ -107,25 +111,28 @@ def find_user(data_list, find_by_phone=False, find_result=False):
     find_list = []
     index_list = []
     if find_by_phone:
-        find_key_number = digit_check("Enter the phone number or part of it to find contact")
-        print(str(find_key_number))
+        find_key_number = digit_check("Enter the phone number or part of it to find the contact")
         for i in data_list:
             index += 1
             if find_key_number in i[-2]:
                 find_list.append(i)
                 index_list.append(index)
-                find_result = True
     else:
         find_key_name = str_check("Enter Name")
         find_key_surname = str_check("Enter Surname")
         for i in data_list:
             index += 1
-            if find_key_name in i[0] or find_key_surname in i[1]:
+            if find_key_name in i[0] and find_key_surname in i[1]:
                 find_list.append(i)
                 index_list.append(index)
                 find_result = True
-    if not find_result:
-        print("There's no contact with that parameters!")
+            if not find_result:
+                if find_key_name in i[0] or find_key_surname in i[1]:
+                    find_list.append(i)
+                    index_list.append(index)
+
+    if len(find_list) == 0:
+        print("There's no contact with such parameters!")
         menu()
 
     # if only 1 match
@@ -136,12 +143,16 @@ def find_user(data_list, find_by_phone=False, find_result=False):
         show_book(find_list)
         while True:
             try:
-                index = int(input("Choose the index of contact: "))
-                if index <= 0:
+                index = int(input("Choose the contact index or enter \"0\" to exit the menu:  "))
+                if index == 0:
+                    menu()
+                if index < 0:
                     continue
                 show_book([find_list[index - 1]])
                 index = index_list[index-1]
                 break
+            except ValueError:
+                continue
             except IndexError:
                 continue
     find(data_list, index)
@@ -180,7 +191,7 @@ def menu():
                 find_user(user_list)
                 break
             else:
-                print("Please, choose the option!")
+                print("Please, select the option!")
                 continue
         menu()
     elif action == '4':
